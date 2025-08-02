@@ -1,11 +1,11 @@
 'use client';
 import React from 'react';
-import ScheduleForm from '@/components/ui/Forms';
+import LanguageNavbar from '@/components/ui/LanguageNavbar';
 
 export default function Home() {
   return (
     <div>
-      <ScheduleForm />
+      <LanguageNavbar />
     </div>
   );
 }

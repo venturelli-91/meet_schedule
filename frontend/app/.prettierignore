@@ -1,0 +1,10 @@
+node_modules
+.build
+.next
+dist
+coverage
+public
+.vscode
+*.svg
+*.png
+*.jpg

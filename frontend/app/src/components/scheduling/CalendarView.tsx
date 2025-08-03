@@ -222,7 +222,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ calendlyHook }) => {
         </div>
       )}
 
-      {/* Modal de Cancelamento */}
       <Modal show={showCancelModal} onClose={() => setShowCancelModal(false)}>
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Cancelar Evento</h3>
@@ -265,7 +264,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ calendlyHook }) => {
         </div>
       </Modal>
 
-      {/* Modal de Participantes */}
       <Modal show={showInviteesModal} onClose={() => setShowInviteesModal(false)}>
         <div className="p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Participantes do Evento</h3>

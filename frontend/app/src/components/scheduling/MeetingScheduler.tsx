@@ -24,7 +24,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
   const [generatedLink, setGeneratedLink] = useState<string | null>(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
-  // Resetar link copiado após 3 segundos
   useEffect(() => {
     if (linkCopied) {
       const timer = setTimeout(() => setLinkCopied(false), 3000);
@@ -32,7 +31,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
     }
   }, [linkCopied]);
 
-  // Gerar link de agendamento
   const handleGenerateLink = () => {
     if (!selectedEventType) {
       alert('Por favor, selecione um tipo de evento');
@@ -47,7 +45,7 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
 
     const link = generateSchedulingLink(selectedEventType, {
       ...linkOptions,
-      // Remover campos vazios
+
       name: linkOptions.name || undefined,
       email: linkOptions.email || undefined,
     });
@@ -57,7 +55,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
     }
   };
 
-  // Copiar link para clipboard
   const copyToClipboard = async () => {
     if (!generatedLink) return;
 
@@ -66,7 +63,7 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
       setLinkCopied(true);
     } catch (err) {
       console.error('Erro ao copiar link:', err);
-      // Fallback para navegadores mais antigos
+
       const textArea = document.createElement('textarea');
       textArea.value = generatedLink;
       document.body.appendChild(textArea);
@@ -77,7 +74,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
     }
   };
 
-  // Abrir link em nova aba
   const openInNewTab = () => {
     if (generatedLink) {
       window.open(generatedLink, '_blank');
@@ -108,7 +104,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Seleção do tipo de evento */}
           <div className="space-y-4">
             <div>
               <Label htmlFor="eventType">Tipo de Evento</Label>
@@ -127,7 +122,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
               </Select>
             </div>
 
-            {/* Informações de pré-preenchimento */}
             <div>
               <Label htmlFor="guestName">Nome do Convidado (opcional)</Label>
               <TextInput
@@ -151,7 +145,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
             </div>
           </div>
 
-          {/* Customizações */}
           <div className="space-y-4">
             <h4 className="font-medium text-gray-900">Personalização</h4>
 
@@ -251,7 +244,6 @@ const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => 
         </div>
       </Card>
 
-      {/* Link gerado */}
       {generatedLink && (
         <Card>
           <h4 className="text-lg font-semibold text-gray-900 mb-4">Link de Agendamento Gerado</h4>

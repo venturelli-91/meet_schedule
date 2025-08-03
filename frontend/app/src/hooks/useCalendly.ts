@@ -49,7 +49,6 @@ export const useCalendly = (): UseCalendlyReturn => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Inicializar serviço do Calendly
   const initializeCalendly = useCallback(async (apiToken: string) => {
     if (!apiToken || apiToken.trim() === '') {
       setError('Token da API do Calendly é obrigatório');
@@ -62,7 +61,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     try {
       const calendlyService = new CalendlyService(apiToken);
 
-      // Testar a conexão obtendo informações do usuário
       const currentUser = await calendlyService.getCurrentUser();
 
       setService(calendlyService);
@@ -85,7 +83,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     }
   }, []);
 
-  // Carregar tipos de evento
   const loadEventTypes = useCallback(async () => {
     if (!service || !user) {
       setError('Serviço Calendly não inicializado');
@@ -108,7 +105,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     }
   }, [service, user]);
 
-  // Carregar eventos agendados
   const loadEvents = useCallback(
     async (
       options: {
@@ -145,7 +141,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     [service, user],
   );
 
-  // Obter detalhes de um evento específico
   const getEventDetails = useCallback(
     async (eventUri: string): Promise<CalendlyEvent | null> => {
       if (!service) {
@@ -170,7 +165,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     [service],
   );
 
-  // Obter participantes de um evento
   const getEventInvitees = useCallback(
     async (eventUri: string): Promise<CalendlyInvitee[]> => {
       if (!service) {
@@ -195,7 +189,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     [service],
   );
 
-  // Cancelar evento
   const cancelEvent = useCallback(
     async (eventUri: string, reason?: string): Promise<boolean> => {
       if (!service) {
@@ -209,7 +202,6 @@ export const useCalendly = (): UseCalendlyReturn => {
       try {
         await service.cancelEvent(eventUri, reason);
 
-        // Atualizar lista de eventos
         if (user) {
           await loadEvents();
         }
@@ -227,7 +219,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     [service, user, loadEvents],
   );
 
-  // Gerar link de agendamento
   const generateSchedulingLink = useCallback(
     (
       eventTypeSlug: string,
@@ -259,7 +250,6 @@ export const useCalendly = (): UseCalendlyReturn => {
     [service, user],
   );
 
-  // Carregar dados automaticamente quando autenticado
   useEffect(() => {
     if (isAuthenticated && user && service) {
       Promise.all([

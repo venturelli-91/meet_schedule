@@ -1,11 +1,11 @@
 'use client';
 import React from 'react';
-import LanguageNavbar from '@/components/ui/LanguageNavbar';
+import CustomCard from '../components/ui/Card';
 
 export default function Home() {
   return (
     <div>
-      <LanguageNavbar />
+      <CustomCard />
     </div>
   );
 }

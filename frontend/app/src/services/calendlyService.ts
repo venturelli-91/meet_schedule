@@ -1,4 +1,4 @@
-const CALENDLY_API_BASE = 'https://api.calendly.com';
+const CALENDLY_API_BASE = process.env.CALENDLY_API_BASE_URL || 'https://api.calendly.com';
 
 export interface CalendlyUser {
   uri: string;
@@ -203,4 +203,27 @@ export class CalendlyService {
     const queryString = params.toString();
     return queryString ? `${baseUrl}?${queryString}` : baseUrl;
   }
+}
+
+// Factory function to create CalendlyService instance with environment token
+export function createCalendlyService(): CalendlyService {
+  const apiToken = process.env.CALENDLY_API_TOKEN;
+
+  if (!apiToken) {
+    throw new Error(
+      'CALENDLY_API_TOKEN não está definido nas variáveis de ambiente. Verifique o arquivo .env.local',
+    );
+  }
+
+  return new CalendlyService(apiToken);
+}
+
+// Lazy initialization - creates instance only when accessed
+let _calendlyService: CalendlyService | null = null;
+
+export function getCalendlyService(): CalendlyService {
+  if (!_calendlyService) {
+    _calendlyService = createCalendlyService();
+  }
+  return _calendlyService;
 }

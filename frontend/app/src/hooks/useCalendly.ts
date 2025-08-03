@@ -5,6 +5,7 @@ import {
   CalendlyEventType,
   CalendlyEvent,
   CalendlyInvitee,
+  createCalendlyService,
 } from '../services/calendlyService';
 
 interface UseCalendlyReturn {
@@ -14,7 +15,8 @@ interface UseCalendlyReturn {
   events: CalendlyEvent[];
   loading: boolean;
   error: string | null;
-  initializeCalendly: (apiToken: string) => void;
+  initializeCalendly: (apiToken?: string) => void;
+  initializeCalendlyFromEnv: () => void;
   loadEventTypes: () => Promise<void>;
   loadEvents: (options?: {
     minStartTime?: string;
@@ -49,17 +51,23 @@ export const useCalendly = (): UseCalendlyReturn => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const initializeCalendly = useCallback(async (apiToken: string) => {
-    if (!apiToken || apiToken.trim() === '') {
-      setError('Token da API do Calendly é obrigatório');
-      return;
-    }
-
+  const initializeCalendly = useCallback(async (apiToken?: string) => {
     setLoading(true);
     setError(null);
 
     try {
-      const calendlyService = new CalendlyService(apiToken);
+      let calendlyService: CalendlyService;
+
+      if (apiToken) {
+        if (apiToken.trim() === '') {
+          setError('Token da API do Calendly é obrigatório');
+          return;
+        }
+        calendlyService = new CalendlyService(apiToken);
+      } else {
+        // Usar o token das variáveis de ambiente
+        calendlyService = createCalendlyService();
+      }
 
       const currentUser = await calendlyService.getCurrentUser();
 
@@ -82,6 +90,10 @@ export const useCalendly = (): UseCalendlyReturn => {
       setLoading(false);
     }
   }, []);
+
+  const initializeCalendlyFromEnv = useCallback(() => {
+    initializeCalendly(); // Chama sem token para usar as variáveis de ambiente
+  }, [initializeCalendly]);
 
   const loadEventTypes = useCallback(async () => {
     if (!service || !user) {
@@ -270,6 +282,7 @@ export const useCalendly = (): UseCalendlyReturn => {
     loading,
     error,
     initializeCalendly,
+    initializeCalendlyFromEnv,
     loadEventTypes,
     loadEvents,
     getEventDetails,

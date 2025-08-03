@@ -1,268 +1,322 @@
-import React, { useState } from 'react';
-import { Card, Button, Label, TextInput, Textarea, Select } from 'flowbite-react';
-import { useGoogleCalendar } from '../../hooks/useGoogleCalendar';
-import { CalendarEvent } from '../../services/googleCalendar';
+import React, { useState, useEffect } from 'react';
+import { Card, Button, Label, Select, TextInput, Badge, Alert } from 'flowbite-react';
+import { HiExternalLink, HiClipboard, HiCheck } from 'react-icons/hi';
+import { useCalendly } from '../../hooks/useCalendly';
 
-const MeetingScheduler: React.FC = () => {
-  const { isAuthenticated, loading, error, authenticate, createEvent, checkAvailability } =
-    useGoogleCalendar();
+interface MeetingSchedulerProps {
+  calendlyHook: ReturnType<typeof useCalendly>;
+}
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    date: '',
-    startTime: '',
-    endTime: '',
-    attendees: '',
-    timeZone: 'America/Sao_Paulo',
+const MeetingScheduler: React.FC<MeetingSchedulerProps> = ({ calendlyHook }) => {
+  const { isAuthenticated, eventTypes, loading, error, generateSchedulingLink } = calendlyHook;
+
+  const [selectedEventType, setSelectedEventType] = useState('');
+  const [linkOptions, setLinkOptions] = useState({
+    name: '',
+    email: '',
+    hide_gdpr_banner: true,
+    hide_landing_page_details: false,
+    hide_event_type_details: false,
+    primary_color: '0069ff',
+    background_color: 'ffffff',
+    text_color: '333333',
   });
+  const [generatedLink, setGeneratedLink] = useState<string | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  const [availabilityResult, setAvailabilityResult] = useState<unknown>(null);
-  const [isChecking, setIsChecking] = useState(false);
+  // Resetar link copiado após 3 segundos
+  useEffect(() => {
+    if (linkCopied) {
+      const timer = setTimeout(() => setLinkCopied(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [linkCopied]);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
+  // Gerar link de agendamento
+  const handleGenerateLink = () => {
+    if (!selectedEventType) {
+      alert('Por favor, selecione um tipo de evento');
+      return;
+    }
+
+    const selectedType = eventTypes.find(type => type.slug === selectedEventType);
+    if (!selectedType) {
+      alert('Tipo de evento não encontrado');
+      return;
+    }
+
+    const link = generateSchedulingLink(selectedEventType, {
+      ...linkOptions,
+      // Remover campos vazios
+      name: linkOptions.name || undefined,
+      email: linkOptions.email || undefined,
+    });
+
+    if (link) {
+      setGeneratedLink(link);
+    }
   };
 
-  const handleCheckAvailability = async () => {
-    if (!formData.date || !formData.startTime || !formData.endTime || !formData.attendees) {
-      alert('Por favor, preencha data, horários e participantes');
-      return;
-    }
-
-    setIsChecking(true);
-    const emails = formData.attendees.split(',').map(email => email.trim());
-    const startDateTime = `${formData.date}T${formData.startTime}:00`;
-    const endDateTime = `${formData.date}T${formData.endTime}:00`;
+  // Copiar link para clipboard
+  const copyToClipboard = async () => {
+    if (!generatedLink) return;
 
     try {
-      const result = await checkAvailability(emails, startDateTime, endDateTime);
-      setAvailabilityResult(result);
+      await navigator.clipboard.writeText(generatedLink);
+      setLinkCopied(true);
     } catch (err) {
-      console.error('Erro ao verificar disponibilidade:', err);
-    } finally {
-      setIsChecking(false);
+      console.error('Erro ao copiar link:', err);
+      // Fallback para navegadores mais antigos
+      const textArea = document.createElement('textarea');
+      textArea.value = generatedLink;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setLinkCopied(true);
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!isAuthenticated) {
-      alert('Por favor, faça login no Google primeiro');
-      return;
-    }
-
-    if (!formData.title || !formData.date || !formData.startTime || !formData.endTime) {
-      alert('Por favor, preencha todos os campos obrigatórios');
-      return;
-    }
-
-    const startDateTime = `${formData.date}T${formData.startTime}:00`;
-    const endDateTime = `${formData.date}T${formData.endTime}:00`;
-
-    const event: CalendarEvent = {
-      summary: formData.title,
-      description: formData.description,
-      start: {
-        dateTime: startDateTime,
-        timeZone: formData.timeZone,
-      },
-      end: {
-        dateTime: endDateTime,
-        timeZone: formData.timeZone,
-      },
-      attendees: formData.attendees
-        ? formData.attendees.split(',').map(email => ({
-            email: email.trim(),
-          }))
-        : [],
-    };
-
-    try {
-      await createEvent(event);
-      alert('Reunião agendada com sucesso!');
-      // Limpar formulário
-      setFormData({
-        title: '',
-        description: '',
-        date: '',
-        startTime: '',
-        endTime: '',
-        attendees: '',
-        timeZone: 'America/Sao_Paulo',
-      });
-      setAvailabilityResult(null);
-    } catch (err) {
-      console.error('Erro ao criar evento:', err);
-      alert('Erro ao agendar reunião');
+  // Abrir link em nova aba
+  const openInNewTab = () => {
+    if (generatedLink) {
+      window.open(generatedLink, '_blank');
     }
   };
 
   if (!isAuthenticated) {
     return (
-      <Card className="max-w-md mx-auto">
+      <Card className="w-full">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-4">Integração com Google Calendar</h3>
-          <p className="text-gray-600 mb-4">
-            Para agendar reuniões, você precisa fazer login com sua conta Google.
+          <p className="text-gray-500 mb-4">
+            Conecte-se ao Calendly para começar a gerar links de agendamento
           </p>
-          <Button onClick={authenticate} color="blue">
-            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-              <path
-                fill="currentColor"
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-              />
-              <path
-                fill="currentColor"
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-              />
-              <path
-                fill="currentColor"
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-              />
-            </svg>
-            Conectar com Google
-          </Button>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="max-w-2xl mx-auto">
-      <h3 className="text-xl font-bold mb-6">Agendar Nova Reunião</h3>
+    <div className="space-y-6">
+      <Card>
+        <h3 className="text-xl font-semibold text-gray-900 mb-4">Gerar Link de Agendamento</h3>
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+        {error && (
+          <Alert color="failure" className="mb-4">
+            <span className="font-medium">Erro:</span> {error}
+          </Alert>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="title">Título da Reunião *</Label>
-          <TextInput
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleInputChange}
-            placeholder="Ex: Reunião de Planejamento"
-            required
-          />
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Seleção do tipo de evento */}
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="eventType">Tipo de Evento</Label>
+              <Select
+                id="eventType"
+                value={selectedEventType}
+                onChange={e => setSelectedEventType(e.target.value)}
+                disabled={loading}
+              >
+                <option value="">Selecione um tipo de evento</option>
+                {eventTypes.map(type => (
+                  <option key={type.uri} value={type.slug}>
+                    {type.name} ({type.duration} min)
+                  </option>
+                ))}
+              </Select>
+            </div>
 
-        <div>
-          <Label htmlFor="description">Descrição</Label>
-          <Textarea
-            id="description"
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            placeholder="Descreva o objetivo da reunião..."
-            rows={3}
-          />
-        </div>
+            {/* Informações de pré-preenchimento */}
+            <div>
+              <Label htmlFor="guestName">Nome do Convidado (opcional)</Label>
+              <TextInput
+                id="guestName"
+                type="text"
+                placeholder="Nome será pré-preenchido no formulário"
+                value={linkOptions.name}
+                onChange={e => setLinkOptions(prev => ({ ...prev, name: e.target.value }))}
+              />
+            </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="date">Data *</Label>
-            <TextInput
-              id="date"
-              name="date"
-              type="date"
-              value={formData.date}
-              onChange={handleInputChange}
-              required
-            />
+            <div>
+              <Label htmlFor="guestEmail">Email do Convidado (opcional)</Label>
+              <TextInput
+                id="guestEmail"
+                type="email"
+                placeholder="Email será pré-preenchido no formulário"
+                value={linkOptions.email}
+                onChange={e => setLinkOptions(prev => ({ ...prev, email: e.target.value }))}
+              />
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="startTime">Hora de Início *</Label>
-            <TextInput
-              id="startTime"
-              name="startTime"
-              type="time"
-              value={formData.startTime}
-              onChange={handleInputChange}
-              required
-            />
+          {/* Customizações */}
+          <div className="space-y-4">
+            <h4 className="font-medium text-gray-900">Personalização</h4>
+
+            <div>
+              <Label htmlFor="primaryColor">Cor Principal</Label>
+              <div className="flex items-center space-x-2">
+                <TextInput
+                  id="primaryColor"
+                  type="text"
+                  placeholder="0069ff"
+                  value={linkOptions.primary_color}
+                  onChange={e =>
+                    setLinkOptions(prev => ({ ...prev, primary_color: e.target.value }))
+                  }
+                  className="flex-1"
+                />
+                <div
+                  className="w-8 h-8 rounded border"
+                  style={{ backgroundColor: `#${linkOptions.primary_color}` }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="backgroundColor">Cor de Fundo</Label>
+              <div className="flex items-center space-x-2">
+                <TextInput
+                  id="backgroundColor"
+                  type="text"
+                  placeholder="ffffff"
+                  value={linkOptions.background_color}
+                  onChange={e =>
+                    setLinkOptions(prev => ({ ...prev, background_color: e.target.value }))
+                  }
+                  className="flex-1"
+                />
+                <div
+                  className="w-8 h-8 rounded border"
+                  style={{ backgroundColor: `#${linkOptions.background_color}` }}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Opções de Exibição</Label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={linkOptions.hide_gdpr_banner}
+                  onChange={e =>
+                    setLinkOptions(prev => ({ ...prev, hide_gdpr_banner: e.target.checked }))
+                  }
+                  className="rounded"
+                />
+                <span className="text-sm">Ocultar banner GDPR</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={linkOptions.hide_landing_page_details}
+                  onChange={e =>
+                    setLinkOptions(prev => ({
+                      ...prev,
+                      hide_landing_page_details: e.target.checked,
+                    }))
+                  }
+                  className="rounded"
+                />
+                <span className="text-sm">Ocultar detalhes da página inicial</span>
+              </label>
+
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={linkOptions.hide_event_type_details}
+                  onChange={e =>
+                    setLinkOptions(prev => ({ ...prev, hide_event_type_details: e.target.checked }))
+                  }
+                  className="rounded"
+                />
+                <span className="text-sm">Ocultar detalhes do tipo de evento</span>
+              </label>
+            </div>
           </div>
-
-          <div>
-            <Label htmlFor="endTime">Hora de Fim *</Label>
-            <TextInput
-              id="endTime"
-              name="endTime"
-              type="time"
-              value={formData.endTime}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
         </div>
 
-        <div>
-          <Label htmlFor="timeZone">Fuso Horário</Label>
-          <Select
-            id="timeZone"
-            name="timeZone"
-            value={formData.timeZone}
-            onChange={handleInputChange}
-          >
-            <option value="America/Sao_Paulo">São Paulo (GMT-3)</option>
-            <option value="America/New_York">Nova York (GMT-5)</option>
-            <option value="Europe/London">Londres (GMT+0)</option>
-            <option value="Asia/Tokyo">Tóquio (GMT+9)</option>
-          </Select>
-        </div>
-
-        <div>
-          <Label htmlFor="attendees">Participantes (emails separados por vírgula)</Label>
-          <TextInput
-            id="attendees"
-            name="attendees"
-            value={formData.attendees}
-            onChange={handleInputChange}
-            placeholder="email1@exemplo.com, email2@exemplo.com"
-          />
-        </div>
-
-        <div className="flex gap-4">
+        <div className="mt-6 flex justify-end">
           <Button
-            type="button"
-            color="gray"
-            onClick={handleCheckAvailability}
-            disabled={isChecking || loading}
+            onClick={handleGenerateLink}
+            disabled={loading || !selectedEventType}
+            className="bg-blue-600 hover:bg-blue-700"
           >
-            {isChecking ? 'Verificando...' : 'Verificar Disponibilidade'}
-          </Button>
-
-          <Button type="submit" color="blue" disabled={loading}>
-            {loading ? 'Agendando...' : 'Agendar Reunião'}
+            Gerar Link de Agendamento
           </Button>
         </div>
-      </form>
+      </Card>
 
-      {availabilityResult !== null && (
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-semibold mb-2">Resultado da Verificação de Disponibilidade:</h4>
-          <pre className="text-sm overflow-auto">
-            {JSON.stringify(availabilityResult as object, null, 2)}
-          </pre>
-        </div>
+      {/* Link gerado */}
+      {generatedLink && (
+        <Card>
+          <h4 className="text-lg font-semibold text-gray-900 mb-4">Link de Agendamento Gerado</h4>
+
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-600 mb-2">Compartilhe este link com seus convidados:</p>
+
+            <div className="flex items-center space-x-2 bg-white p-3 rounded border">
+              <code className="flex-1 text-sm text-blue-600 break-all">{generatedLink}</code>
+
+              <div className="flex space-x-1">
+                <Button
+                  size="sm"
+                  color="gray"
+                  onClick={copyToClipboard}
+                  className="flex items-center space-x-1"
+                >
+                  {linkCopied ? (
+                    <>
+                      <HiCheck className="w-4 h-4" />
+                      <span>Copiado!</span>
+                    </>
+                  ) : (
+                    <>
+                      <HiClipboard className="w-4 h-4" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  size="sm"
+                  color="blue"
+                  onClick={openInNewTab}
+                  className="flex items-center space-x-1"
+                >
+                  <HiExternalLink className="w-4 h-4" />
+                  <span>Abrir</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {selectedEventType && (
+            <div className="mt-4">
+              <h5 className="font-medium text-gray-900 mb-2">Informações do Evento:</h5>
+              {eventTypes
+                .filter(type => type.slug === selectedEventType)
+                .map(type => (
+                  <div key={type.uri} className="bg-blue-50 p-3 rounded">
+                    <div className="flex items-center justify-between mb-2">
+                      <h6 className="font-medium text-blue-900">{type.name}</h6>
+                      <Badge color="blue">{type.duration} minutos</Badge>
+                    </div>
+
+                    {type.description_plain && (
+                      <p className="text-sm text-blue-700">{type.description_plain}</p>
+                    )}
+                  </div>
+                ))}
+            </div>
+          )}
+        </Card>
       )}
-    </Card>
+    </div>
   );
 };
 

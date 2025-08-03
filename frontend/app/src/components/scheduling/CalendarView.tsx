@@ -1,177 +1,309 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Button, Badge, Modal } from 'flowbite-react';
-import { useGoogleCalendar } from '../../hooks/useGoogleCalendar';
-import { CalendarEvent } from '../../services/googleCalendar';
+import { Card, Button, Badge, Modal, Alert, TextInput, Spinner } from 'flowbite-react';
+import { HiCalendar, HiClock, HiMail, HiUser, HiExclamation, HiRefresh } from 'react-icons/hi';
+import { useCalendly } from '../../hooks/useCalendly';
+import { CalendlyEvent, CalendlyInvitee } from '../../services/calendlyService';
 
-const CalendarView: React.FC = () => {
-  const { isAuthenticated, events, loading, error, loadEvents, deleteEvent } = useGoogleCalendar();
+interface CalendarViewProps {
+  calendlyHook: ReturnType<typeof useCalendly>;
+}
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [eventToDelete, setEventToDelete] = useState<CalendarEvent | null>(null);
+const CalendarView: React.FC<CalendarViewProps> = ({ calendlyHook }) => {
+  const { isAuthenticated, events, loading, error, loadEvents, cancelEvent, getEventInvitees } =
+    calendlyHook;
+
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [eventToCancel, setEventToCancel] = useState<CalendlyEvent | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [showInviteesModal, setShowInviteesModal] = useState(false);
+  const [selectedEventInvitees, setSelectedEventInvitees] = useState<CalendlyInvitee[]>([]);
+  const [loadingInvitees, setLoadingInvitees] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
-      loadEvents();
+      loadEvents({
+        minStartTime: new Date().toISOString(),
+        status: 'active',
+      });
     }
   }, [isAuthenticated, loadEvents]);
 
-  const handleDeleteClick = (event: CalendarEvent) => {
-    setEventToDelete(event);
-    setShowDeleteModal(true);
+  const handleCancelClick = (event: CalendlyEvent) => {
+    setEventToCancel(event);
+    setShowCancelModal(true);
   };
 
-  const confirmDelete = async () => {
-    if (eventToDelete?.id) {
-      await deleteEvent(eventToDelete.id);
-      setShowDeleteModal(false);
-      setEventToDelete(null);
+  const handleConfirmCancel = async () => {
+    if (!eventToCancel) return;
+
+    const success = await cancelEvent(
+      eventToCancel.uri,
+      cancelReason || 'Cancelado pelo organizador',
+    );
+
+    if (success) {
+      setShowCancelModal(false);
+      setEventToCancel(null);
+      setCancelReason('');
     }
   };
 
-  const formatDateTime = (dateTimeStr: string) => {
-    const date = new Date(dateTimeStr);
-    return date.toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
+  const handleViewInvitees = async (event: CalendlyEvent) => {
+    setLoadingInvitees(true);
+    setShowInviteesModal(true);
+
+    try {
+      const invitees = await getEventInvitees(event.uri);
+      setSelectedEventInvitees(invitees);
+    } catch (err) {
+      console.error('Erro ao carregar participantes:', err);
+    } finally {
+      setLoadingInvitees(false);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      weekday: 'long',
       year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
     });
   };
 
-  const getEventStatus = (event: CalendarEvent) => {
+  const getEventStatus = (event: CalendlyEvent) => {
     const now = new Date();
-    const startTime = new Date(event.start.dateTime);
-    const endTime = new Date(event.end.dateTime);
+    const startTime = new Date(event.start_time);
+    const endTime = new Date(event.end_time);
+
+    if (event.status === 'canceled') {
+      return { label: 'Cancelado', color: 'failure' as const };
+    }
 
     if (now < startTime) {
-      return { status: 'upcoming', color: 'blue', text: 'Próximo' };
+      return { label: 'Agendado', color: 'info' as const };
     } else if (now >= startTime && now <= endTime) {
-      return { status: 'ongoing', color: 'green', text: 'Em andamento' };
+      return { label: 'Em andamento', color: 'success' as const };
     } else {
-      return { status: 'past', color: 'gray', text: 'Finalizado' };
+      return { label: 'Concluído', color: 'gray' as const };
     }
+  };
+
+  const handleRefresh = () => {
+    loadEvents({
+      minStartTime: new Date().toISOString(),
+      status: 'active',
+    });
   };
 
   if (!isAuthenticated) {
     return (
-      <Card className="max-w-md mx-auto">
+      <Card className="w-full">
         <div className="text-center">
-          <h3 className="text-lg font-semibold mb-4">Visualizar Eventos</h3>
-          <p className="text-gray-600">Faça login no Google Calendar para ver seus eventos.</p>
-        </div>
-      </Card>
-    );
-  }
-
-  if (loading) {
-    return (
-      <Card className="max-w-4xl mx-auto">
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando eventos...</p>
-        </div>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card className="max-w-4xl mx-auto">
-        <div className="text-center py-8">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-          <Button onClick={loadEvents} className="mt-4">
-            Tentar Novamente
-          </Button>
+          <HiCalendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-500 mb-4">
+            Conecte-se ao Calendly para visualizar seus eventos agendados
+          </p>
         </div>
       </Card>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Card>
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold">Meus Eventos</h3>
-          <Button onClick={loadEvents} size="sm">
-            Atualizar
-          </Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-xl font-semibold text-gray-900">Eventos Agendados</h3>
+        <Button
+          onClick={handleRefresh}
+          disabled={loading}
+          color="gray"
+          size="sm"
+          className="flex items-center space-x-1"
+        >
+          <HiRefresh className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <span>Atualizar</span>
+        </Button>
+      </div>
+
+      {error && (
+        <Alert color="failure">
+          <span className="font-medium">Erro:</span> {error}
+        </Alert>
+      )}
+
+      {loading && (
+        <div className="flex justify-center py-8">
+          <Spinner size="lg" />
         </div>
+      )}
 
-        {events.length === 0 ? (
+      {!loading && events.length === 0 && (
+        <Card>
           <div className="text-center py-8">
-            <p className="text-gray-600">Nenhum evento encontrado.</p>
+            <HiCalendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h4 className="text-lg font-medium text-gray-900 mb-2">Nenhum evento encontrado</h4>
+            <p className="text-gray-500">Você não tem eventos agendados no momento.</p>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {events.map(event => {
-              const eventStatus = getEventStatus(event);
+        </Card>
+      )}
 
-              return (
-                <div
-                  key={event.id}
-                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-lg font-semibold">{event.summary}</h4>
-                        <Badge color={eventStatus.color as any}>{eventStatus.text}</Badge>
+      {!loading && events.length > 0 && (
+        <div className="space-y-4">
+          {events.map(event => {
+            const status = getEventStatus(event);
+
+            return (
+              <Card key={event.uri} className="hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-lg font-semibold text-gray-900">{event.name}</h4>
+                      <Badge color={status.color}>{status.label}</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
+                      <div className="flex items-center space-x-2">
+                        <HiCalendar className="w-4 h-4" />
+                        <span>{formatDate(event.start_time)}</span>
                       </div>
 
-                      {event.description && (
-                        <p className="text-gray-600 mb-2">{event.description}</p>
+                      <div className="flex items-center space-x-2">
+                        <HiClock className="w-4 h-4" />
+                        <span>
+                          {formatTime(event.start_time)} - {formatTime(event.end_time)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <HiUser className="w-4 h-4" />
+                        <span>
+                          {event.invitees_counter.active} de {event.invitees_counter.limit}{' '}
+                          participantes
+                        </span>
+                      </div>
+
+                      {event.location && (
+                        <div className="flex items-center space-x-2">
+                          <HiMail className="w-4 h-4" />
+                          <span>{event.location.type}</span>
+                        </div>
                       )}
+                    </div>
 
-                      <div className="text-sm text-gray-500 space-y-1">
-                        <div>
-                          <strong>Início:</strong> {formatDateTime(event.start.dateTime)}
-                        </div>
-                        <div>
-                          <strong>Fim:</strong> {formatDateTime(event.end.dateTime)}
-                        </div>
-
-                        {event.attendees && event.attendees.length > 0 && (
-                          <div>
-                            <strong>Participantes:</strong>{' '}
-                            {event.attendees.map(attendee => attendee.email).join(', ')}
-                          </div>
-                        )}
+                    {event.meeting_notes_plain && (
+                      <div className="p-3 bg-gray-50 rounded">
+                        <p className="text-sm text-gray-700">{event.meeting_notes_plain}</p>
                       </div>
-                    </div>
-
-                    <div className="flex gap-2 ml-4">
-                      <Button size="xs" color="failure" onClick={() => handleDeleteClick(event)}>
-                        Excluir
-                      </Button>
-                    </div>
+                    )}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </Card>
 
-      {/* Modal de confirmação de exclusão */}
-      <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} size="md">
-        <Modal.Header>Confirmar Exclusão</Modal.Header>
-        <Modal.Body>
-          <p>
-            Tem certeza que deseja excluir o evento "{eventToDelete?.summary}"? Esta ação não pode
-            ser desfeita.
-          </p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button color="failure" onClick={confirmDelete}>
-            Sim, Excluir
-          </Button>
-          <Button color="gray" onClick={() => setShowDeleteModal(false)}>
-            Cancelar
-          </Button>
-        </Modal.Footer>
+                <div className="flex justify-end space-x-2 pt-4 border-t">
+                  <Button size="sm" color="gray" onClick={() => handleViewInvitees(event)}>
+                    Ver Participantes
+                  </Button>
+
+                  {event.status === 'active' && new Date(event.start_time) > new Date() && (
+                    <Button size="sm" color="failure" onClick={() => handleCancelClick(event)}>
+                      Cancelar Evento
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Modal de Cancelamento */}
+      <Modal show={showCancelModal} onClose={() => setShowCancelModal(false)}>
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Cancelar Evento</h3>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2 text-yellow-600">
+              <HiExclamation className="w-5 h-5" />
+              <span className="font-medium">Tem certeza que deseja cancelar este evento?</span>
+            </div>
+
+            {eventToCancel && (
+              <div className="p-3 bg-gray-50 rounded">
+                <h5 className="font-medium text-gray-900">{eventToCancel.name}</h5>
+                <p className="text-sm text-gray-600">
+                  {formatDate(eventToCancel.start_time)} às {formatTime(eventToCancel.start_time)}
+                </p>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Motivo do cancelamento (opcional)
+              </label>
+              <TextInput
+                value={cancelReason}
+                onChange={e => setCancelReason(e.target.value)}
+                placeholder="Informe o motivo do cancelamento..."
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 mt-6">
+            <Button color="failure" onClick={handleConfirmCancel} disabled={loading}>
+              {loading ? 'Cancelando...' : 'Confirmar Cancelamento'}
+            </Button>
+            <Button color="gray" onClick={() => setShowCancelModal(false)}>
+              Fechar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de Participantes */}
+      <Modal show={showInviteesModal} onClose={() => setShowInviteesModal(false)}>
+        <div className="p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Participantes do Evento</h3>
+
+          {loadingInvitees ? (
+            <div className="flex justify-center py-4">
+              <Spinner size="md" />
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {selectedEventInvitees.length === 0 ? (
+                <p className="text-gray-500 text-center py-4">Nenhum participante encontrado.</p>
+              ) : (
+                selectedEventInvitees.map(invitee => (
+                  <div
+                    key={invitee.uri}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">{invitee.name}</p>
+                      <p className="text-sm text-gray-600">{invitee.email}</p>
+                      <p className="text-xs text-gray-500">Fuso horário: {invitee.timezone}</p>
+                    </div>
+                    <Badge color={invitee.canceled ? 'failure' : 'success'}>
+                      {invitee.canceled ? 'Cancelado' : 'Confirmado'}
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          <div className="flex justify-end mt-6">
+            <Button color="gray" onClick={() => setShowInviteesModal(false)}>
+              Fechar
+            </Button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

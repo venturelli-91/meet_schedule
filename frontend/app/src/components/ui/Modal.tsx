@@ -36,6 +36,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
+              title="Close modal"
             >
               <HiX className="w-6 h-6" />
             </button>

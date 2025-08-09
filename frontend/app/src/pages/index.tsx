@@ -91,6 +91,7 @@ export default function Home() {
                       <a
                         href="https://calendly.com/app/settings/developer"
                         target="_blank"
+                        rel="noopener"
                         className="underline"
                       >
                         calendly.com/app/settings/developer

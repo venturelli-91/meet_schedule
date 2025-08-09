@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { HiCheckCircle, HiExclamationCircle, HiX } from 'react-icons/hi';
 
 interface ToastProps {
@@ -58,7 +58,12 @@ const Toast: React.FC<ToastProps> = ({ message, type, duration = 3000, onClose, 
           {getIcon()}
           <span className="ml-2 text-sm font-medium">{message}</span>
         </div>
-        <button onClick={onClose} className="ml-3 hover:opacity-70 transition-opacity">
+        <button
+          onClick={onClose}
+          className="ml-3 hover:opacity-70 transition-opacity"
+          title="Close notification"
+          aria-label="Close notification"
+        >
           <HiX className="w-4 h-4" />
         </button>
       </div>

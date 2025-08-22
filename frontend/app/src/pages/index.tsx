@@ -26,7 +26,7 @@ export default function Home() {
   const handleDisconnect = () => {
     setShowTokenInput(true);
     setApiToken('');
-    // Reset do hook seria ideal aqui, mas vamos usar refresh da página
+
     window.location.reload();
   };
 
@@ -36,22 +36,19 @@ export default function Home() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Meeting Schedule</h1>
-          <p className="text-lg text-gray-600">
-            Gerencie seus compromissos com integração ao Calendly
-          </p>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Gerenciamento de reuniões inteligente
+          </h1>
+          <p className="text-lg text-gray-600">Bem-vindo, Aurélio. Confira sua agenda</p>
         </div>
 
-        {/* Conexão com Calendly */}
         {(showTokenInput || !calendlyHook.isAuthenticated) && (
           <div className="max-w-md mx-auto mb-8">
             <Card>
               <div className="text-center">
                 <HiCalendar className="w-16 h-16 text-blue-600 mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-gray-900 mb-4">Conectar ao Calendly</h2>
-                <p className="text-gray-600 mb-6">
-                  Insira seu token da API do Calendly para acessar seus eventos
-                </p>
+                <p className="text-gray-600 mb-6">Insira seu token API Calendly</p>
 
                 {calendlyHook.error && (
                   <Alert color="failure" className="mb-4">
@@ -61,16 +58,14 @@ export default function Home() {
 
                 <div className="space-y-4">
                   <div className="flex">
-                    <div className="flex items-center px-3 bg-gray-50 border border-r-0 border-gray-300 rounded-l-lg">
-                      <HiKey className="w-5 h-5 text-gray-500" />
-                    </div>
+                    <HiKey className="w-5 h-5 text-gray-500" />
                     <TextInput
                       type="password"
                       placeholder="Seu token da API Calendly"
                       value={apiToken}
                       onChange={e => setApiToken(e.target.value)}
-                      className="flex-1 rounded-l-none"
-                      onKeyPress={e => e.key === 'Enter' && handleConnect()}
+                      className="flex-1"
+                      onKeyDown={e => e.key === 'Enter' && handleConnect()}
                     />
                   </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { FaLinkedin, FaWhatsapp, FaGithub, FaEnvelope } from 'react-icons/fa';
 
 const LanguageNavbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -173,7 +174,7 @@ const LanguageNavbar = () => {
             className="flex items-center space-x-3 rtl:space-x-reverse"
           >
             <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-              Flowbite
+              Meet Schedule
             </span>
           </a>
           <div className="flex items-center md:order-2 space-x-1 md:space-x-0 rtl:space-x-reverse">
@@ -234,49 +235,51 @@ const LanguageNavbar = () => {
             </button>
           </div>
           <div
-            className="items-center justify-between hidden w-full md:flex md:w-auto md:order-1"
+            className="items-center justify-between flex w-full md:w-auto md:order-1"
             id="navbar-language"
           >
-            <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
+            <ul className="flex flex-row justify-center items-center gap-4 font-medium p-2 md:p-0 mt-4 md:mt-0 border border-gray-100 rounded-lg bg-gray-50 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
               <li>
                 <a
-                  href="#"
-                  className="block py-2 px-3 text-white bg-blue-700 rounded-sm md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500"
+                  href="https://www.linkedin.com/in/aurelioventurelli"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block py-2 px-3 text-white bg-black rounded-sm md:bg-transparent md:text-black md:p-0 md:dark:text-blue-500"
                   aria-current="page"
+                  title="LinkedIn"
                 >
-                  Home
+                  <FaLinkedin size={24} className="inline align-middle" />
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                  href="https://wa.me/5561993608080"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-green-600 dark:text-white md:dark:hover:text-green-400 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                  title="WhatsApp"
                 >
-                  About
+                  <FaWhatsapp size={24} className="inline align-middle" />
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                  href="https://github.com/venturelli-91"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-gray-900 dark:text-white md:dark:hover:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                  title="GitHub"
                 >
-                  Services
+                  <FaGithub size={24} className="inline align-middle" />
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                  href="mailto:seu@email.com"
+                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-red-600 dark:text-white md:dark:hover:text-red-400 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
+                  title="E-mail"
                 >
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="block py-2 px-3 md:p-0 text-gray-900 rounded-sm hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700"
-                >
-                  Contact
+                  <FaEnvelope size={24} className="inline align-middle" />
                 </a>
               </li>
             </ul>

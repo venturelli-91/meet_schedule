@@ -1,6 +1,6 @@
 # 📅 Meet Schedule
 
-**Uma aplicação moderna para agendamento de reuniões com integração ao Calendly**
+**A modern application for scheduling meetings with Calendly integration**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -9,207 +9,188 @@
 [![Jest](https://img.shields.io/badge/Jest-323330?style=for-the-badge&logo=Jest&logoColor=white)](https://jestjs.io/)
 [![Testing Library](https://img.shields.io/badge/testing%20library-323330?style=for-the-badge&logo=testing-library&logoColor=red)](https://testing-library.com/)
 
-## 🎯 Sobre o Projeto
+## 🎯 About the Project
 
-Meet Schedule é uma solução elegante e intuitiva para gerenciamento de agendamentos, desenvolvida com as mais modernas tecnologias web. A aplicação oferece uma interface responsiva e user-friendly para facilitar o processo de marcação de reuniões.
+Meet Schedule is an elegant and intuitive solution for schedule management, developed with the latest web technologies. The application offers a responsive and user-friendly interface to make the meeting scheduling process easier.
 
-### ✨ Principais Funcionalidades
+### ✨ Main Features
 
-- 🗓️ **Visualização de Calendário**: Interface moderna para visualizar e gerenciar agendamentos
-- 📱 **Design Responsivo**: Experiência otimizada para desktop, tablet e mobile
-- 🔗 **Integração Calendly**: Conectividade com a API do Calendly para sincronização de eventos
-- 🎨 **Interface Intuitiva**: Design clean e profissional usando Tailwind CSS
-- ⚡ **Performance Otimizada**: Construído com Next.js para máxima performance
-- 🧪 **Testes Automatizados**: Cobertura de testes com Jest para garantir qualidade
+- 🗓️ **Calendar View**: Modern interface to view and manage schedules
+- 📱 **Responsive Design**: Optimized experience for desktop, tablet, and mobile
+- 🔗 **Calendly Integration**: Connectivity with the Calendly API for event synchronization
+- 🎨 **Intuitive Interface**: Clean and professional design using Tailwind CSS
+- ⚡ **Optimized Performance**: Built with Next.js for maximum performance
+- 🧪 **Automated Testing**: Test coverage with Jest to ensure quality
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Technologies Used
 
 ### Frontend
 
-- **Next.js 14** - Framework React para aplicações full-stack
-- **TypeScript** - Superset JavaScript com tipagem estática
-- **React 18** - Biblioteca para construção de interfaces
-- **Tailwind CSS** - Framework CSS utilitário
-- **React Icons** - Biblioteca de ícones para React
+- **Next.js 14** - React framework for full-stack applications
+- **TypeScript** - JavaScript superset with static typing
+- **React 18** - Library for building interfaces
+- **Tailwind CSS** - Utility-first CSS framework
+- **React Icons** - Icon library for React
 
-### Ferramentas de Desenvolvimento
+### Development Tools
 
-- **ESLint** - Análise estática de código
-- **Jest** - Framework de testes JavaScript
-- **React Testing Library** - Utilitários para testes de componentes React
-- **PostCSS** - Processador CSS
+- **ESLint** - Static code analysis
+- **Jest** - JavaScript testing framework
+- **React Testing Library** - Utilities for testing React components
+- **PostCSS** - CSS processor
 
-### Integração Externa
+### External Integration
 
-- **Calendly API** - Serviço de agendamento online
+- **Calendly API** - Online scheduling service
 
-## 🚀 Como Executar o Projeto
+## 🚀 How to Run the Project
 
-### Pré-requisitos
+### Prerequisites
 
 - Node.js 18+
-- npm ou yarn
+- npm or yarn
 
-### Instalação
+### Installation
 
-1. **Clone o repositório**
+1. **Clone the repository**
 
    ```bash
    git clone https://github.com/venturelli-91/meet_schedule.git
    cd meet_schedule
    ```
 
-2. **Navegue para o diretório do frontend**
+2. **Navigate to the frontend directory**
 
    ```bash
    cd frontend/app
    ```
 
-3. **Instale as dependências**
+3. **Install dependencies**
 
    ```bash
    npm install
-   # ou
+   # or
    yarn install
    ```
 
-4. **Configure as variáveis de ambiente**
+4. **Set up environment variables**
 
    ```bash
    cp .env.example .env.local
    ```
 
-   ### 🔑 Como obter sua API Token do Calendly
+   ### 🔑 How to get your Calendly API Token
 
-   Para usar a integração com Calendly, você precisa criar uma Personal Access Token:
+   To use the Calendly integration, you need to create a Personal Access Token:
 
-   1. **Acesse sua conta Calendly**
+   1. **Access your Calendly account**
 
-      - Vá para [https://calendly.com](https://calendly.com)
-      - Faça login em sua conta
+      - Go to [https://calendly.com](https://calendly.com)
+      - Log in to your account
 
-   2. **Navegue para Integrações e API**
-      - No menu lateral, clique em **"Account Settings"**
-      - Selecione **"Developer"** ou **"Integrations & Apps"**
-   3. **Crie uma Personal Access Token**
-      - Clique em **"Create Personal Access Token"**
-      - Dê um nome descritivo para o token (ex: "Meet Schedule App")
-      - Defina as permissões necessárias:
+   2. **Navigate to Integrations and API**
+      - In the sidebar menu, click **"Account Settings"**
+      - Select **"Developer"** or **"Integrations & Apps"**
+   3. **Create a Personal Access Token**
+      - Click **"Create Personal Access Token"**
+      - Give the token a descriptive name (e.g., "Meet Schedule App")
+      - Set the required permissions:
         - ✅ Read events
         - ✅ Read user information
         - ✅ Read organization information
-   4. **Copie e guarde o token**
+   4. **Copy and save the token**
 
-      - ⚠️ **IMPORTANTE**: Copie o token imediatamente, pois ele só será exibido uma vez
-      - Guarde-o em local seguro
+      - ⚠️ **IMPORTANT**: Copy the token immediately, as it will only be shown once
+      - Store it in a safe place
 
-   5. **Configure no arquivo .env.local**
+   5. **Set it in the .env.local file**
       ```env
       NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN=your_personal_access_token_here
       NEXT_PUBLIC_CALENDLY_USER_URI=https://api.calendly.com/users/your_user_id
       ```
 
-   📋 **Exemplo de configuração:**
+   📋 **Example configuration:**
 
    ```env
    NEXT_PUBLIC_CALENDLY_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcHAiLCJzdWIiOiJ1c2Vy...
    NEXT_PUBLIC_CALENDLY_USER_URI=https://api.calendly.com/users/AAAAAAAAAAAAAAAA
    ```
 
-5. **Execute o projeto em modo desenvolvimento** ```bash
+5. **Run the project in development mode**
+
+   ```bash
    npm run dev
 
-   # ou
+   # or
 
    yarn dev
-
    ```
 
-   ```
+6. **Access the application**
 
-6. **Acesse a aplicação**
+   Open [http://localhost:3000](http://localhost:3000) in your browser
 
-   Abra [http://localhost:3000](http://localhost:3000) no seu navegador
-
-## 🧪 Executando os Testes
+## 🧪 Running Tests
 
 ```bash
-# Executar todos os testes
+# Run all tests
 npm test
 
-# Executar testes em modo watch
+# Run tests in watch mode
 npm run test:watch
 
-# Executar testes com coverage
+# Run tests with coverage
 npm run test:coverage
 ```
 
-## 📁 Estrutura do Projeto
+## 🌟 Main Components
 
-```
-meet_schedule/
-├── frontend/app/
-│   ├── src/
-│   │   ├── components/          # Componentes React
-│   │   │   ├── scheduling/      # Componentes de agendamento
-│   │   │   └── ui/             # Componentes de interface
-│   │   ├── hooks/              # Custom hooks
-│   │   ├── pages/              # Páginas Next.js
-│   │   ├── services/           # Serviços e APIs
-│   │   ├── styles/             # Estilos globais
-│   │   └── tests/              # Arquivos de teste
-│   ├── public/                 # Arquivos públicos
-│   └── package.json
-└── README.md
-```
+- **CalendarView**: Main calendar view
+- **MeetingScheduler**: Interface for scheduling meetings
+- **LanguageNavbar**: Responsive navigation with social links
+- **CalendlyApiTest**: Component for integration tests
 
-## 🌟 Componentes Principais
-
-- **CalendarView**: Visualização principal do calendário
-- **MeetingScheduler**: Interface para agendamento de reuniões
-- **LanguageNavbar**: Navegação responsiva com links sociais
-- **CalendlyApiTest**: Componente para testes de integração
-
-## 🔧 Scripts Disponíveis
+## 🔧 Available Scripts
 
 ```json
 {
-	"dev": "Executa em modo desenvolvimento",
-	"build": "Cria build de produção",
-	"start": "Inicia servidor de produção",
-	"test": "Executa testes",
-	"lint": "Verifica qualidade do código"
+	"dev": "Run in development mode",
+	"build": "Create production build",
+	"start": "Start production server",
+	"test": "Run tests",
+	"lint": "Check code quality"
 }
 ```
 
 ## 📱 Screenshots
 
-> _Adicione capturas de tela da aplicação aqui_
+To update
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-Contribuições são sempre bem-vindas! Para contribuir:
+Contributions are always welcome! To contribute:
 
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+1. Fork the project
+2. Create a branch for your feature (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## 📄 Licença
+## 📄 License
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+This project is under the MIT license. See the [LICENSE](LICENSE) file for more details.
 
-## 👨‍💻 Autor
+## 👨‍💻 Author
 
-**Venturelli**
+**Aurélio Venturelli**
 
-- 💼 LinkedIn: [Seu LinkedIn](https://www.linkedin.com/in/seu-usuario)
+- 💼 LinkedIn: [Your LinkedIn](([https://www.linkedin.com/in/aurelioventurelli/])
 - 🐙 GitHub: [venturelli-91](https://github.com/venturelli-91)
-- 📧 Email: seu@email.com
+- 📧 Email: venturelli.dev@gmail.com
 
 ---
 
-⭐ Se este projeto te ajudou, considere dar uma estrela!
+⭐ If this project helped you, consider giving it a star!
 
-**Desenvolvido com ❤️ e ☕**
+**Developed with ❤️ and ☕**
+
